@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+ <meta charset="utf-8">
+ <title>D3 Page Template</title>
+ <script type="text/javascript" src="https://d3js.org/d3.v3.js"></script>
+ <style>
+ </style>
+ </head>
+ <body>
+     <p>Click on this text to update the chart with new data values (once).</p>
+ </body>
+</html>
+<script type="text/javascript">
+    var dataset=[ 5, 10, 13, 19, 21, 25, 22, 18, 15, 13,11, 12, 15, 20, 18, 17, 16, 18, 23, 25 ];
+    var w=600;
+    var h=300;
+
+    var svg = d3.select("body")
+                .append("svg")
+                .attr("width", w)
+                .attr("height", h);
+
+    //设置序数比例尺
+    var xScale = d3.scale.ordinal()
+                         .domain(d3.range(dataset.length))//设置了输入值的值域
+                         //.rangeBands()根据输入值域的长度自动将其切成相等的块或档，第二个参数设置档间距
+                         //.rangeRoundBands()输出的值会舍入为最接近的整数
+                         .rangeRoundBands([0, w], 0.05);
+    var yScale = d3.scale.ordinal()
+                         .domain(d3.range(30))//设置了输入值的值域
+                         //.rangeBands()根据输入值域的长度自动将其切成相等的块或档，第二个参数设置档间距
+                         //.rangeRoundBands()输出的值会舍入为最接近的整数
+                         .rangeRoundBands([0, h],0.05);
+    //添加矩形，条形图
+    svg.selectAll("rect")
+        .data(dataset)
+        .enter()
+        .append("rect")
+        .attr("x",function(d,i){return xScale(i);})
+        .attr("y", function(d){return h-yScale(d);})//让条形从下向上
+        .attr("width",xScale.rangeBand())
+        .attr("height", function(d){return yScale(d);})
+        .attr("fill",function(d){return "rgb(0,0,"+(d*10)+")";});
+
+    //加标签
+    svg.selectAll("text")
+       .data(dataset)
+       .enter()
+       .append("text")
+       .text(function(d){return d;})
+       .attr("x",function(d,i){return xScale(i) + xScale.rangeBand() / 2;})
+       .attr("y",function(d){ return h-yScale(d)+14;})
+       .attr("font-family","sans-serif")
+       .attr("font-size","11px")
+       .attr("fill","white")
+       .attr("text-anchor","middle")//text-anchor水平居中文本
+
+
+    d3.select("p")
+      .on("click",function(){
+      //从数据集中删除第一个元素
+    //   dataset.shift();
+
+      //新数据集
+      var numValues = dataset.length; // 取得原数据集的长度
+      dataset = []; // 初始化空数组
+      for (var i = 0; i < numValues; i++) { 
+        var newNumber = Math.floor(Math.random() * 25); // 生成新随机数（0~24）
+        dataset.push(newNumber); // 把新数值添加到数组
+      }
+
+      yScale.domain(d3.range(30));//更新比例尺的值域
+      //更新所有矩形
+      var bars=svg.selectAll("rect")
+         .data(dataset)
+         .transition()//动态动画
+         .duration(1000)//参数的单位是持续1毫秒
+         .attr("y", function(d) {return h - yScale(d);})
+         .attr("height", function(d) {return yScale(d);});
+         
+      svg.selectAll("text")
+         .data(dataset)
+         .transition()
+         //设置静态延迟时间
+         //  .delay(1000)//延迟时间
+         //设置动态延迟时间
+         .delay(function(d,i){
+             return i/dataset.length*1000;//确保数据在很多时总的过渡时间是可以接收的
+         })
+         .duration(500)
+         //默认缓动效果是cublic-in-out逐渐加速然后逐渐减速
+        //  .ease("linear")//线性缓动，没有逐渐加速和减速的变化
+        //  .ease("circle")//逐渐加速进入并加速，然后突然停止
+        //  .ease("elastic")//有弹性
+         .ease("bounce")//像皮球落地一样反复弹跳，慢慢停下来
+         .text(function(d) {
+            return d;
+            })
+         .attr("x", function(d, i) {
+            return xScale(i) + xScale.rangeBand() / 2;
+            })
+         .attr("y", function(d) {
+            return h - yScale(d) + 14;
+           });
+        //退出
+        // bars.exit()
+        //     .transition(1000)
+        //     .attr("x",w)
+        //     .remove();
+        // svg.selectAll("text")
+        // .data(dataset,key)
+        // .exit()
+        // .transition()
+        // .duration(500)
+        // .attr("x",w)
+    });
+ </script>

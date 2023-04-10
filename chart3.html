@@ -1,0 +1,316 @@
+<link href="https://fonts.googleapis.com/css?family=Open+Sans&display=swap" rel="stylesheet"> 
+<div class="hourly-chart-wrapper">
+    <svg id="hourly-chart" height="285" xmlns="http://www.w3.org/2000/svg">
+        <g transform="translate(40,40)">
+            <g class="y axis" id="y-axis-ticks">
+                <line class="y-axis-zero-line axis-line" id="y-axis-zero-line" x1="0" y1="0" x2="0" y2="240"></line>
+            </g>
+            <g id="hourly-chart-bars"></g>
+            <g class="x axis" id="hourly-x-ticks" transform="translate(0,0)">
+                <line class="x-axis-zero-line axis-line" id="x-axis-zero-line" x1="0" y1="240" x2="600" y2="240"></line>
+            </g>
+        </g>
+    </svg>
+</div>
+<script>
+    var index = 0;
+    // Total bar container width 35 px
+    // Labels before formatting
+    var labels = [['Wed', '11 PM'], ['Thu', '12 AM'], ['Thu', '1 AM'], ['Thu', '2 AM'], ['Thu', '3 AM'], ['Thu', '4 AM'], ['Thu', '5 AM'], ['Thu', '6 AM'], ['Thu', '7 AM'], ['Thu', '8 AM'], ['Thu', '9 AM'], ['Thu', '10 AM'], ['Thu', '11 AM'], ['Thu', '12 PM'], ['Thu', '1 PM'], ['Thu', '2 PM'], ['Thu', '3 PM'], ['Thu', '4 PM'], ['Thu', '5 PM'], ['Thu', '6 PM'], ['Thu', '7 PM'], ['Thu', '8 PM'], ['Thu', '9 PM'], ['Thu', '10 PM'], ['Thu', '11 PM'], ['Fri', '12 AM'], ['Fri', '1 AM'], ['Fri', '2 AM'], ['Fri', '3 AM']]; // Data points
+
+    var data = [0.25, 0.56, 0.5, 0.5, 0.86, 0.45, 0.3, 0, 0.3, 0.6, 0.4, 0, 0, 0.8, 0, 0, 0.4, 0.3, 0.1, 0, 0, 0.2, 0, 0, 0.4, 0.7, 0.1, 0.6, 0.4]; // Get max value from data set
+
+    var maxDataValue = Math.max.apply(Math, data); // Max Y Tick
+
+    var maxYValue = yAxisRangeImperial(maxDataValue); // Get chart svg
+
+    var hourlyChart = document.getElementById('hourly-chart'); // Get y axis ticks g
+
+    var tickContainer = document.getElementById('y-axis-ticks'); // Get y axis zero line
+
+    var yAxisZeroLine = document.getElementById('y-axis-zero-line'); // Get x axis zero line
+
+    var xAxisZeroLine = document.getElementById('x-axis-zero-line'); // Get chart ticks by id
+
+    var hourlyChartXTicks = document.getElementById('hourly-x-ticks'); // Get chart bar group by id
+
+    var hourlyChartBars = document.getElementById('hourly-chart-bars'); // Function to determine chart width
+
+    function chartWidth(data) {
+        var width = 600;
+        var possibleWidth = data.length * 35;
+
+        if (possibleWidth > 600) {
+            width = possibleWidth;
+        }
+
+        return width;
+    } // Function to figure out max Y Tick
+
+
+    function yAxisRangeImperial(max) {
+        if (max < 1) {
+            return 1;
+        } else if (max < 2) {
+            return 2;
+        } else if (max < 4) {
+            return 4;
+        } else if (max < 8) {
+            return 8;
+        } else if (max < 12) {
+            return 12;
+        } else if (max < 24) {
+            return 24;
+        } else if (max < 48) {
+            return 48;
+        } else if (max < 72) {
+            return 72;
+        } else if (max < 96) {
+            return 96;
+        } else {
+            return 192;
+        }
+    }
+
+    ; // Function to populate the y axis ticks and depth labels
+
+    function populateHourlyYAxisLabels(max, unit) {
+        var interval = max / 4;
+        var ticks = [interval + unit, interval * 2 + unit, interval * 3 + unit, interval * 4 + unit];
+        var width = chartWidth(data);
+        var height = 240;
+
+        //tickContainer.appendChild('<line class="gray" x2="-30" y2="0"></line><line class="gray" x1="0" x2="' + width + '" y2="0"></line>');
+
+        var newLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        newLine.setAttribute('class', 'gray');
+        newLine.setAttribute('x1', '0');
+        newLine.setAttribute('y1', '0');
+        newLine.setAttribute('x2', '-30');
+        newLine.setAttribute('y2', '0');
+        tickContainer.appendChild(newLine);
+
+        var newLine2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        newLine2.setAttribute('class', 'gray');
+        newLine2.setAttribute('x1', '0');
+        newLine2.setAttribute('y1', '0');
+        newLine2.setAttribute('x2', width);
+        newLine2.setAttribute('y2', '0');
+        tickContainer.appendChild(newLine2);
+
+        xAxisZeroLine.setAttribute("x2", width);
+
+        for (var j = ticks.length - 1; j >= 0; j--) {
+            if (j !== 0) {
+                //tickContainer.innerHTML += '<g class="tick" transform="translate(0,' + (height - 60 * j) + ')"><line class="gray" x2="-30" y2="0"></line>
+                //<line class="gray" x1="0" x2="' + width + '" y2="0"></line>
+                //<text class="y-tick" dy=".32em" x="-9" y="-30" style="text-anchor: end;">' + ticks[j] + '</text></g > ';
+                var newg = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                newg.setAttribute('class', 'tick');
+                newg.setAttribute('transform', 'translate(0,' + (height - 60 * j) + ')');
+
+                var newLine3 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                newLine3.setAttribute('class', 'gray');
+                newLine3.setAttribute('x1', '0');
+                newLine3.setAttribute('y1', '0');
+                newLine3.setAttribute('x2', '-30');
+                newLine3.setAttribute('y2', '0');
+                newg.appendChild(newLine3);
+
+                var newLine4 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                newLine4.setAttribute('class', 'gray');
+                newLine4.setAttribute('x1', '0');
+                newLine4.setAttribute('y1', '0');
+                newLine4.setAttribute('x2', width);
+                newLine4.setAttribute('y2', '0');
+                newg.appendChild(newLine4);
+
+                var newtext = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                newtext.setAttribute('class', 'y-tick');
+                newtext.setAttribute('dy', '.32em');
+                newtext.setAttribute('x', '-9');
+                newtext.setAttribute('y', '-30');
+                newtext.setAttribute('style', 'text-anchor: end;');
+                newtext.textContent = ticks[j];
+                newg.appendChild(newtext);
+
+                tickContainer.appendChild(newg);
+
+            } else {
+                //tickContainer.innerHTML += '<g class="tick" transform="translate(0,' + height + ')">
+                //<line x2="-30" y2="0"></line>
+                //<text dy=".32em" x="-9" y="-30" style="text-anchor: end;">' + ticks[j] + '</text></g > ';
+
+                var newg = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                newg.setAttribute('class', 'tick');
+                newg.setAttribute('transform', 'translate(0,' + (height - 60 * j) + ')');
+
+                var newLine3 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                newLine3.setAttribute('class', 'gray');
+                newLine3.setAttribute('x1', '0');
+                newLine3.setAttribute('y1', '0');
+                newLine3.setAttribute('x2', '-30');
+                newLine3.setAttribute('y2', '0');
+                newg.appendChild(newLine3);
+
+                var newtext = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                newtext.setAttribute('dy', '.32em');
+                newtext.setAttribute('x', '-9');
+                newtext.setAttribute('y', '-30');
+                newtext.setAttribute('style', 'text-anchor: end;');
+                newtext.textContent = ticks[j];
+                newg.appendChild(newtext);
+
+                tickContainer.appendChild(newg);
+            }
+        };
+    }; // Function to determine hour display interval
+
+    function hoursLabelInterval(hours) {
+        if (hours <= 6) {
+            return 1;
+        } else if (hours <= 12) {
+            return 2;
+        } else if (hours <= 24) {
+            return 4;
+        } else if (hours <= 36) {
+            return 6;
+        } else if (hours <= 48) {
+            return 8;
+        } else if (hours <= 60) {
+            return 10;
+        } else if (hours <= 72) {
+            return 12;
+        } else {
+            return 24;
+        }
+    } // Function to create x axis labels
+
+    function createLabels(labels) {
+        var hoursInterval = hoursLabelInterval(labels.length);
+        var currentDay = '';
+        var formattedLabels = labels.map(function (label, i) {
+            if (i % hoursInterval === 0) {
+                if (label[0] !== currentDay) {
+                    currentDay = label[0];
+                    return [label[0], label[1]];
+                }
+                return ['', label[1]];
+            }
+            return ['', ''];
+        });
+
+        for (var i = 0; i < formattedLabels.length; i++) {
+            var translateDistance = void 0;
+
+            if (i === 0) {
+                translateDistance = 15;
+            } else {
+                translateDistance = i * 30 + 15;
+            }
+            if (formattedLabels[i][1].length && i !== 0) {
+                //hourlyChartXTicks.innerHTML += '
+                //<g class="tick" transform="translate(' + translateDistance + ',0)">
+                //<line class="y-axis-zero-line axis-line dash gray" stroke-dasharray="4" stroke-width="1" x1="-13" y1="0" x2="-13" y2="240"></line>
+                //<text class="label-day" dy=".71em" y="-20" x="0">' + formattedLabels[i][0] + '</text>
+                //<text class="label-time" dy=".71em" y="-10" x="0">' + formattedLabels[i][1] + '</text></g > ';
+                var newg = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                newg.setAttribute('class', 'tick');
+                newg.setAttribute('transform', 'translate(' + translateDistance + ',0)');
+
+                var newLine3 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                newLine3.setAttribute('class', 'y-axis-zero-line axis-line dash gray');
+                newLine3.setAttribute('stroke-dasharray', '4');
+                newLine3.setAttribute('stroke-width', '1');
+                newLine3.setAttribute('x1', '-13');
+                newLine3.setAttribute('y1', '0');
+                newLine3.setAttribute('x2', '-13');
+                newLine3.setAttribute('y2', '240');
+                newg.appendChild(newLine3);
+
+                var newtext = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                newtext.setAttribute('class', 'label-day');
+                newtext.setAttribute('dy', '.71em');
+                newtext.setAttribute('x', '0');
+                newtext.setAttribute('y', '-20');
+                newtext.textContent = formattedLabels[i][0];
+                newg.appendChild(newtext);
+
+                var newtext = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                newtext.setAttribute('class', 'label-time');
+                newtext.setAttribute('dy', '.71em');
+                newtext.setAttribute('x', '0');
+                newtext.setAttribute('y', '-10');
+                newtext.textContent = formattedLabels[i][1];
+                newg.appendChild(newtext);
+
+                hourlyChartXTicks.appendChild(newg);
+
+            } else {
+                // hourlyChartXTicks.innerHTML += '
+                //<g class="tick" transform="translate(' + translateDistance + ',0)">
+                //<text class="label-day" dy=".71em" y="-20" x="0">' + formattedLabels[i][0] + '</text>
+                //<text class="label-time" dy=".71em" y="-10" x="0">' + formattedLabels[i][1] + '</text></g > ';
+
+                var newg = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                newg.setAttribute('class', 'tick');
+                newg.setAttribute('transform', 'translate(' + translateDistance + ',0)');
+
+                var newtext = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                newtext.setAttribute('class', 'label-day');
+                newtext.setAttribute('dy', '.71em');
+                newtext.setAttribute('x', '0');
+                newtext.setAttribute('y', '-20');
+                newtext.textContent = formattedLabels[i][0];
+                newg.appendChild(newtext);
+
+                var newtext = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                newtext.setAttribute('class', 'label-time');
+                newtext.setAttribute('dy', '.71em');
+                newtext.setAttribute('x', '0');
+                newtext.setAttribute('y', '-10');
+                newtext.textContent = formattedLabels[i][1];
+                newg.appendChild(newtext);
+
+                hourlyChartXTicks.appendChild(newg);
+            }
+        }
+    } // Function to compute bar height
+
+
+    function barHeight(maxChartYTick, individualBarAccumulation) {
+        var barHeightDecimalPercentage = individualBarAccumulation / maxChartYTick;
+        return barHeightDecimalPercentage;
+    } // Function to create bars
+
+
+    function createBars(data, maxYTick) {
+        for (var k = 0; k < data.length; k++) {
+            var translateDistance = void 0;
+
+            if (k === 0) {
+                translateDistance = 5;
+            } else {
+                translateDistance = 5 + k * 30;
+            }
+
+            var height = barHeight(maxYTick, data[k]);
+            //hourlyChartBars.innerHTML += '<rect class="bar" x="' + translateDistance + '" width="25" y="' + (240 - 240 * height) + '" height="' + 240 * height + '"></rect>';
+
+            var newrect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            newrect.setAttribute('class', 'bar');
+            newrect.setAttribute('x', translateDistance);
+            newrect.setAttribute('width', '25');
+            newrect.setAttribute('y', (240 - 240 * height));
+            newrect.setAttribute('height', (240 * height));
+
+            hourlyChartBars.appendChild(newrect);
+            console.log((index++) + ": " + hourlyChartBars.innerHTML);
+        }
+    }
+
+    hourlyChart.setAttribute("width", chartWidth(data));
+    populateHourlyYAxisLabels(maxYValue, '"');
+    createLabels(labels);
+    createBars(data, maxYValue);
+</script>
